@@ -31,7 +31,7 @@
     <!-- Formula refresher -->
     <section class="card">
       <h2>Formula</h2>
-      <p class="mono">MSE(θ̂) = Bias(θ̂)² + Var(θ̂)</p>
+      <p class="mono">MSE = Bias² + Variance</p>
       <ul>
         <li><b>Bias</b>: how far the average prediction is from the truth.</li>
         <li><b>Variance</b>: how much predictions change if we re-sample the data.</li>
@@ -47,8 +47,8 @@
           <tr><th>Model</th><th>Bias</th><th>Variance</th><th>MSE = Bias² + Var</th></tr>
         </thead>
         <tbody>
-          <tr><td>A (simple)</td><td>1.00</td><td>4.00</td><td>1.00² + 4.00 = <b>5.00</b></td></tr>
-          <tr><td>B (complex)</td><td>0.40</td><td>7.00</td><td>0.40² + 7.00 = <b>7.16</b></td></tr>
+          <tr><td>A</td><td>1.00</td><td>4.00</td><td>1.00² + 4.00 = <b>5.00</b></td></tr>
+          <tr><td>B</td><td>0.40</td><td>7.00</td><td>0.40² + 7.00 = <b>7.16</b></td></tr>
         </tbody>
       </table>
       <p class="note">Lower bias isn’t always better if the variance shoots up. We care about the <b>sum</b>.</p>
