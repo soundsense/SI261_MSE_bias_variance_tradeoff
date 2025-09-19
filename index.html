@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MSE Playground: Bias & Variance Trade-Off</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --ink:#0f172a; --blue:#0369a1; --muted:#f1f5f9; --bg:#f8fafc; --card:#fff; --line:#e5e7eb; --pill:#e0f2fe; --good:#065f46; --goodbg:#ecfdf5; }
+    body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--ink); }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    h1 { color:var(--blue); margin:0 0 8px; }
+    h2 { margin: 8px 0; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius: 12px; padding: 16px; margin: 16px 0; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+    .pill { display:inline-block; background:var(--pill); padding:6px 10px; border-radius:999px; margin:3px; font-weight:600; }
+    table { width:100%; border-collapse: collapse; margin-top:12px; }
+    th, td { border:1px solid var(--line); padding:8px; text-align:center; }
+    th { background:var(--muted); }
+    input { width:110px; max-width:32vw; padding:4px; border:1px solid var(--line); border-radius:6px; text-align:center; }
+    .btn { background:var(--blue); color:#fff; border:0; border-radius:6px; padding:6px 12px; cursor:pointer; margin-top:8px; }
+    .result { margin-top:6px; padding:6px; background:var(--bg); border:1px solid var(--line); border-radius:6px; }
+    .success { background:var(--goodbg); border:1px solid #bbf7d0; color:var(--good); border-radius:8px; padding:10px; margin-top:12px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .note { font-size: 0.95rem; color:#334155; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>MSE Playground: Bias & Variance Trade-Off</h1>
+    <p class="note">Connect the pieces: <b>Bias</b> (systematic error) and <b>Variance</b> (wiggliness across samples). Their sum gives MSE.</p>
+
+    <!-- Formula refresher -->
+    <section class="card">
+      <h2>Formula</h2>
+      <p class="mono">MSE(θ̂) = Bias(θ̂)² + Var(θ̂)</p>
+      <ul>
+        <li><b>Bias</b>: how far the average prediction is from the truth.</li>
+        <li><b>Variance</b>: how much predictions change if we re-sample the data.</li>
+      </ul>
+    </section>
+
+    <!-- Example Walkthrough -->
+    <section class="card">
+      <h2>Example Walkthrough</h2>
+      <p>Two pretend models, with bias and variance already measured:</p>
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Bias</th><th>Variance</th><th>MSE = Bias² + Var</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A (simple)</td><td>1.00</td><td>4.00</td><td>1.00² + 4.00 = <b>5.00</b></td></tr>
+          <tr><td>B (complex)</td><td>0.40</td><td>7.00</td><td>0.40² + 7.00 = <b>7.16</b></td></tr>
+        </tbody>
+      </table>
+      <p class="note">Lower bias isn’t always better if the variance shoots up. We care about the <b>sum</b>.</p>
+    </section>
+
+    <!-- Practice 1: Compute MSE from bias & variance -->
+    <section class="card">
+      <h2>Practice: Compute MSE</h2>
+      <p>Enter <b>Bias</b> and <b>Variance</b> for a single model, then compute MSE.</p>
+      <div class="mono">
+        Bias =
+        <input id="p1Bias" type="number" step="0.01" placeholder="e.g., 0.8">
+        Variance =
+        <input id="p1Var" type="number" step="0.01" placeholder="e.g., 2.5">
+        <button class="btn" onclick="computeMSE1()">Compute MSE</button>
+      </div>
+      <div id="p1Out" class="result"></div>
+      <div class="note" style="margin-top:6px;">
+        Tip: MSE = bias² + variance. (If bias = 0.8 and variance = 2.5 → MSE = 0.64 + 2.5 = 3.14)
+      </div>
+    </section>
+
+    <!-- Practice 2: Compare three models -->
+    <section class="card">
+      <h2>Challenge: Which Model Wins?</h2>
+      <p>Compute MSE for each model and pick the best (smallest MSE).</p>
+      <table>
+        <thead>
+          <tr><th>Model</th><th>Bias</th><th>Variance</th><th>Your MSE</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>A</td><td>0.9</td><td>2.1</td><td><input id="mA" placeholder="MSE of A"></td></tr>
+          <tr><td>B</td><td>0.2</td><td>4.4</td><td><input id="mB" placeholder="MSE of B"></td></tr>
+          <tr><td>C</td><td>0.5</td><td>2.6</td><td><input id="mC" placeholder="MSE of C"></td></tr>
+        </tbody>
+      </table>
+      <div class="mono" style="margin-top:8px;">
+        Winner (A/B/C): <input id="winner" placeholder="type A, B, or C">
+        <button class="btn" onclick="checkChallenge()">Check Answers</button>
+      </div>
+      <div id="chOut" class="result"></div>
+
+      <div id="congrats" class="success" style="display:none;">
+        🎉 Nice! You nailed the bias–variance tradeoff.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const tol = 0.01;
+    const close = (a,b)=>Math.abs(a-b)<=tol;
+    const num = v => parseFloat(v);
+
+    // Practice 1
+    function computeMSE1(){
+      const b = num(document.getElementById('p1Bias').value);
+      const v = num(document.getElementById('p1Var').value);
+      const out = document.getElementById('p1Out');
+      if (Number.isNaN(b) || Number.isNaN(v) || v < 0){
+        out.textContent = "❌ Please enter a numeric bias and a non-negative variance.";
+        return;
+      }
+      const mse = b*b + v;
+      out.textContent = "MSE = bias² + variance = " + b.toFixed(2) + "² + " + v.toFixed(2) + " = " + mse.toFixed(2);
+    }
+
+    // Challenge correct values (no noise)
+    // A: 0.9^2 + 2.1 = 0.81 + 2.10 = 2.91
+    // B: 0.2^2 + 4.4 = 0.04 + 4.40 = 4.44
+    // C: 0.5^2 + 2.6 = 0.25 + 2.60 = 2.85  → winner C
+    const challenge = {
+      A: 0.81 + 2.10,   // 2.91
+      B: 0.04 + 4.40,   // 4.44
+      C: 0.25 + 2.60,   // 2.85
+      winner: 'C'
+    };
+
+    function checkChallenge(){
+      const mA = num(document.getElementById('mA').value);
+      const mB = num(document.getElementById('mB').value);
+      const mC = num(document.getElementById('mC').value);
+      const win = (document.getElementById('winner').value || '').trim().toUpperCase();
+      const out = document.getElementById('chOut');
+      const congrats = document.getElementById('congrats');
+
+      let ok = true;
+      if (!close(mA, challenge.A)) ok = false;
+      if (!close(mB, challenge.B)) ok = false;
+      if (!close(mC, challenge.C)) ok = false;
+      if (win !== challenge.winner) ok = false;
+
+      if (ok){
+        out.textContent = "✅ Correct! MSE(A)=2.91, MSE(B)=4.44, MSE(C)=2.85 → Winner: C";
+        congrats.style.display = "block";
+      } else {
+        out.textContent = "❌ Check your MSE calculations and winner choice.";
+        congrats.style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
